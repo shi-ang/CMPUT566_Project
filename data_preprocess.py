@@ -45,7 +45,7 @@ def trim_data(data):
     
     return data, label
 
-def abandon_useless_features(data, non_zero_rate_threshold = 1):
+def abandon_useless_features(data, non_zero_rate_threshold = 0.95):
     count_non_zero = np.count_nonzero(data, axis = 0)
     non_zero_rate = count_non_zero / data.shape[0]
     useless_feature_index = np.argwhere(non_zero_rate < non_zero_rate_threshold)
@@ -64,7 +64,8 @@ if __name__ == '__main__':
     data = StandardScaler().fit_transform(data)
     
     pickle_file = 'SH.pickle'
-    if not os.path.isfile(pickle_file):    #判断是否存在此文件，若无则存储
+    # determine whether the file is exist, if not, save date to pickle file
+    if not os.path.isfile(pickle_file):    
         print('Saving data to pickle file...')
         try:
             with open('SH.pickle', 'wb') as pfile:

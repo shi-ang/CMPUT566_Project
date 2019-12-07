@@ -14,7 +14,7 @@ from collections import Counter
 from sklearn import linear_model
 from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, ExtraTreesClassifier, GradientBoostingClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split, LeaveOneOut, KFold, GridSearchCV, cross_val_score
 from sklearn.naive_bayes import GaussianNB
@@ -24,7 +24,7 @@ from sklearn.linear_model import LogisticRegression
 def get_top_n_features(data, label, num_runs = 1000, remaining_features_num = 10):
     idx_matrx = np.zeros([num_runs, remaining_features_num])
     for i in range(num_runs):
-        clf = linear_model.SGDClassifier(penalty = 'elasticnet', alpha = 0.0001, max_iter = 1000, tol = 1e-6, shuffle = True)
+        clf = linear_model.SGDClassifier(penalty = 'elasticnet', alpha = 0.0001, max_iter = 1000, tol = 1e-6, shuffle = True, random_state = i)
         clf.fit(data, label)
         weights = clf.coef_
     
@@ -82,7 +82,8 @@ if __name__ == '__main__':
     Xtest = Xtest[:, features_idx]
     
     pickle_file = 'SH_selected_features.pickle'
-    if not os.path.isfile(pickle_file):    #判断是否存在此文件，若无则存储
+    # determine whether the file is exist, if not, save date to pickle file
+    if not os.path.isfile(pickle_file):    
         print('Saving data to pickle file...')
         try:
             with open('SH_selected_features.pickle', 'wb') as pfile:
@@ -121,26 +122,25 @@ if __name__ == '__main__':
         'KNeighborsClassifier': KNeighborsClassifier(),
         'GaussianNB': GaussianNB(),
         'RandomForestClassifier': RandomForestClassifier(n_estimators = 100, 
-                                                         warm_start=True, 
-                                                         max_features='sqrt',
-                                                         max_depth=6, 
-                                                         min_samples_split=3, 
-                                                         min_samples_leaf=2, 
-                                                         n_jobs=-1, 
-                                                         verbose=0),
-        'Neural Network': MLPClassifier(solver = 'adam'),
+                                                          warm_start=True, 
+                                                          max_features='sqrt',
+                                                          max_depth=None, 
+                                                          min_samples_split=2, 
+                                                          min_samples_leaf=1, 
+                                                          n_jobs=-1),
+        # 'Neural Network': MLPClassifier(solver = 'adam', max_iter = 1000),
     }
     p_grid = {
         'SVM_rbf': {"C": [0.1, 1, 10], "gamma": [.01, .1]},
         'SVM_linear': {"C": [0.1, 1, 10], "gamma": [.01, .1]},
         'LogisticRegression': {"C": [0.1, 1, 10]},
-        'KNeighborsClassifier': {"n_neighbors": np.arange(1, 6)},
-        'Neural Network': {"hidden_layer_sizes":[2, 3, 4, 5,
-                                                 (2, 2), (2, 3), (2, 4), (2, 5),
-                                                 (3, 2), (3, 3), (3, 4), (3, 5),
-                                                 (4, 2), (4, 3), (4, 4), (4, 5),
-                                                 (5, 2), (5, 3), (5, 4), (5, 5),],
+        'KNeighborsClassifier': {"n_neighbors": np.arange(1, 10)},
+        'Neural Network': {"hidden_layer_sizes":[5, 7, 9,
+                                                 (5, 5), (5, 7), (5, 9),
+                                                 (7, 5), (7, 7), (7, 9),
+                                                 (9, 5), (9, 7), (9, 9),],
                             "activation": ['relu', 'logistic'],
+        'RandomForest': {"n_estimators": [10, 100, 1000]}
         }
     }
     
